@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="Preview" style="flex-grow: 1; background-color: rgba(118, 43, 43, 0.44); position: absolute; top: 0; left: 0; bottom: 0; right: 0; scale: 1 1;" />
+    <ui:VisualElement style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); margin-left: 40px; margin-right: 40px; margin-top: 40px; margin-bottom: 40px;">
+        <ui:DropdownField label="Active Device" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="Selector" style="overflow: hidden; position: relative; -unity-font-definition: url(&apos;project://database/Assets/UI%20Toolkit/NotoSansMono-Light.ttf?fileID=12800000&amp;guid=ac75f680308d844cbb7fd253396730c6&amp;type=3#NotoSansMono-Light&apos;); font-size: 20px; color: rgb(255, 255, 255);" />
+        <ui:Label tabindex="-1" text="Label" display-tooltip-when-elided="true" enable-rich-text="false" name="Description" style="right: auto; top: auto; margin-left: 4px; margin-top: 4px; -unity-font-definition: url(&apos;project://database/Assets/UI%20Toolkit/NotoSansMono-Light.ttf?fileID=12800000&amp;guid=ac75f680308d844cbb7fd253396730c6&amp;type=3#NotoSansMono-Light&apos;); font-size: 20px; color: rgb(255, 255, 255); position: relative; padding-top: 10px; white-space: normal;" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,40 +1,62 @@
 using UnityEngine;
+using UnityEngine.UIElements;
 using System.Linq;
-using UIText = UnityEngine.UI.Text;
 
 public sealed class WebCamSelector : MonoBehaviour
 {
-    [SerializeField] UIText _label = null;
+    WebCamTexture _webcam;
+    RenderTexture _temp;
 
-    string DescribeResolution(Resolution res)
-      => $"{res.width}x{res.height}@{res.refreshRateRatio.value}Hz";
-
-    string DescribeResolutions(WebCamDevice dev)
-      => string.Join(", ", dev.availableResolutions.Select(res => DescribeResolution(res)));
-
-    string DescribeDevice(WebCamDevice dev)
+    Vector3 CalcAspectRatioFixScale()
     {
-        var text = $"Device name: {dev.name}\n";
+        var src = (float)_webcam.width / _webcam.height;
+        var dst = (float)Screen.width / Screen.height;
+        if (dst > src)
+            return new Vector3(src / dst, 1, 1);
+        else
+            return new Vector3(1, dst / src, 1);
+    }
 
-        text += $"  Type: {dev.kind}\n";
+    async void SelectDevice(string name)
+    {
+        if (_webcam != null)
+        {
+            Destroy(_webcam);
+            Destroy(_temp);
+        }
 
-        if (dev.depthCameraName != null)
-            text += $"  Depth support: ({dev.depthCameraName})\n";
+        _webcam = new WebCamTexture(name);
+        _webcam.Play();
 
-        text += $"  Direction: {(dev.isFrontFacing ? "Front" : "Rear")}\n";
+        while (_webcam.width < 32) await Awaitable.NextFrameAsync();
 
-        if (dev.isAutoFocusPointSupported)
-            text += "  Auto focus support\n";
+        _temp = new RenderTexture(_webcam.width, _webcam.height, 0);
 
-        if (dev.availableResolutions != null)
-            text += $"  Supported resolutions: {DescribeResolutions(dev)}\n";
-
-        return text;
+        var doc = GetComponent<UIDocument>();
+        var preview = (VisualElement)doc.rootVisualElement.Q("Preview");
+        preview.style.backgroundImage = Background.FromRenderTexture(_temp);
+        preview.transform.scale = CalcAspectRatioFixScale();
     }
 
     async Awaitable Start()
     {
         await Application.RequestUserAuthorization(UserAuthorization.WebCam);
-        _label.text = string.Join("----\n", WebCamTexture.devices.Select(dev => DescribeDevice(dev)));
+
+        var doc = GetComponent<UIDocument>();
+        var selector = (DropdownField)doc.rootVisualElement.Q("Selector");
+
+        var c_devs = WebCamTexture.devices.Select(dev => dev.name);
+        var d_devs = WebCamTexture.devices.Select(dev => dev.depthCameraName);
+        selector.choices = c_devs.Concat(d_devs.Where(s => s != null)).ToList();
+        selector.RegisterValueChangedCallback(e => SelectDevice(e.newValue));
+    }
+
+    void Update()
+    {
+        if (_webcam == null) return;
+        var vflip = _webcam.videoVerticallyMirrored;
+        var scale = new Vector2(1, vflip ? -1 : 1);
+        var offset = new Vector2(0, vflip ? 1 : 0);
+        Graphics.Blit(_webcam, _temp, scale, offset);
     }
 }
